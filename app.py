@@ -12,9 +12,10 @@ def setup():
 @app.route("/")
 def index():
     db = get_db()
-    records = db.execute(
-        "SELECT * FROM consumption ORDER BY created_at DESC"
-    ).fetchall()
+    cur = db.cursor()
+    cur.execute("SELECT * FROM consumption ORDER BY created_at DESC")
+    records = cur.fetchall()
+    cur.close()
     db.close()
     return render_template("index.html", records=records)
 
@@ -32,18 +33,21 @@ def add():
         db = get_db()
 
         # Calculate distance from last entry
-        last = db.execute(
+        cur = db.cursor()
+        cur.execute(
             "SELECT current_km FROM consumption ORDER BY created_at DESC LIMIT 1"
-        ).fetchone()
+        )
+        last = cur.fetchone()
         distance = None
         if last and last["current_km"]:
             distance = float(current_km) - float(last["current_km"])
 
-        db.execute(
+        cur.execute(
             """INSERT INTO consumption (fuel_type, price, current_km, distance, notes, created_at)
-               VALUES (?, ?, ?, ?, ?, ?)""",
+               VALUES (%s, %s, %s, %s, %s, %s)""",
             (fuel_type, price, current_km, distance, notes, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         )
+        cur.close()
         db.commit()
         db.close()
         return redirect(url_for("index"))
@@ -54,7 +58,9 @@ def add():
 @app.route("/delete/<int:record_id>", methods=["POST"])
 def delete(record_id):
     db = get_db()
-    db.execute("DELETE FROM consumption WHERE id = ?", (record_id,))
+    cur = db.cursor()
+    cur.execute("DELETE FROM consumption WHERE id = %s", (record_id,))
+    cur.close()
     db.commit()
     db.close()
     return redirect(url_for("index"))
@@ -62,25 +68,31 @@ def delete(record_id):
 @app.route("/mileage", methods=["GET", "POST"])
 def mileage():
     db = get_db()
+    cur = db.cursor()
     if request.method == "POST":
         odometer_km = request.form.get("odometer_km")
         notes = request.form.get("notes", "")
-        db.execute(
-            "INSERT INTO mileage (odometer_km, notes, recorded_at) VALUES (?, ?, ?)",
+        cur.execute(
+            "INSERT INTO mileage (odometer_km, notes, recorded_at) VALUES (%s, %s, %s)",
             (odometer_km, notes, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         )
+        cur.close()
         db.commit()
         db.close()
         return redirect(url_for("mileage"))
 
-    records = db.execute("SELECT * FROM mileage ORDER BY recorded_at DESC").fetchall()
+    cur.execute("SELECT * FROM mileage ORDER BY recorded_at DESC")
+    records = cur.fetchall()
+    cur.close()
     db.close()
     return render_template("mileage.html", records=records)
 
 @app.route("/mileage/delete/<int:record_id>", methods=["POST"])
 def delete_mileage(record_id):
     db = get_db()
-    db.execute("DELETE FROM mileage WHERE id = ?", (record_id,))
+    cur = db.cursor()
+    cur.execute("DELETE FROM mileage WHERE id = %s", (record_id,))
+    cur.close()
     db.commit()
     db.close()
     return redirect(url_for("mileage"))
@@ -88,16 +100,25 @@ def delete_mileage(record_id):
 @app.route("/stats")
 def stats():
     db = get_db()
-    records = db.execute("SELECT * FROM consumption ORDER BY created_at ASC").fetchall()
-    total_spent = db.execute("SELECT SUM(price) as total FROM consumption").fetchone()["total"] or 0
-    total_entries = db.execute("SELECT COUNT(*) as count FROM consumption").fetchone()["count"] or 0
-    by_type = db.execute(
+    cur = db.cursor()
+
+    cur.execute("SELECT * FROM consumption ORDER BY created_at ASC")
+    records = cur.fetchall()
+
+    cur.execute("SELECT SUM(price) as total FROM consumption")
+    total_spent = cur.fetchone()["total"] or 0
+
+    cur.execute("SELECT COUNT(*) as count FROM consumption")
+    total_entries = cur.fetchone()["count"] or 0
+
+    cur.execute(
         "SELECT fuel_type, COUNT(*) as count, SUM(price) as total FROM consumption GROUP BY fuel_type"
-    ).fetchall()
+    )
+    by_type = cur.fetchall()
 
     # Mileage by date
-    mileage_by_date = db.execute("""
-        SELECT DATE(recorded_at) as day,
+    cur.execute("""
+        SELECT DATE(recorded_at::timestamp) as day,
                MAX(odometer_km) - MIN(odometer_km) as distance,
                MIN(odometer_km) as start_km,
                MAX(odometer_km) as end_km,
@@ -105,11 +126,12 @@ def stats():
         FROM mileage
         GROUP BY day
         ORDER BY day DESC
-    """).fetchall()
+    """)
+    mileage_by_date = cur.fetchall()
 
     # Mileage by month
-    mileage_by_month = db.execute("""
-        SELECT strftime('%Y-%m', recorded_at) as month,
+    cur.execute("""
+        SELECT TO_CHAR(recorded_at::timestamp, 'YYYY-MM') as month,
                MAX(odometer_km) - MIN(odometer_km) as distance,
                MIN(odometer_km) as start_km,
                MAX(odometer_km) as end_km,
@@ -117,23 +139,25 @@ def stats():
         FROM mileage
         GROUP BY month
         ORDER BY month DESC
-    """).fetchall()
+    """)
+    mileage_by_month = cur.fetchall()
 
     # Date range filter params
     range_from = request.args.get("range_from", "")
     range_to   = request.args.get("range_to", "")
     mileage_range = None
     if range_from and range_to:
-        row = db.execute("""
+        cur.execute("""
             SELECT MAX(odometer_km) - MIN(odometer_km) as distance,
                    MIN(odometer_km) as start_km,
                    MAX(odometer_km) as end_km,
                    COUNT(*) as entries
             FROM mileage
-            WHERE DATE(recorded_at) BETWEEN ? AND ?
-        """, (range_from, range_to)).fetchone()
-        mileage_range = row
+            WHERE DATE(recorded_at::timestamp) BETWEEN %s AND %s
+        """, (range_from, range_to))
+        mileage_range = cur.fetchone()
 
+    cur.close()
     db.close()
     return render_template(
         "stats.html",

@@ -1,19 +1,19 @@
-import sqlite3
 import os
+import psycopg2
+import psycopg2.extras
 
-DATABASE = os.environ.get("DATABASE_PATH", "/data/bbm_tracker.db")
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 def get_db():
-    os.makedirs(os.path.dirname(DATABASE), exist_ok=True)
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
     return conn
 
 def init_db():
     db = get_db()
-    db.execute("""
+    cur = db.cursor()
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS consumption (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             fuel_type TEXT NOT NULL,
             price REAL NOT NULL,
             current_km REAL NOT NULL,
@@ -22,13 +22,14 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
-    db.execute("""
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS mileage (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             odometer_km REAL NOT NULL,
             notes TEXT,
             recorded_at TEXT NOT NULL
         )
     """)
     db.commit()
+    cur.close()
     db.close()

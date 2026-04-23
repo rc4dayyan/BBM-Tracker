@@ -7,9 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /data
-
-ENV DATABASE_PATH=/data/bbm_tracker.db
 ENV FLASK_ENV=production
 
 EXPOSE 5000
