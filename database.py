@@ -5,7 +5,13 @@ import psycopg2.extras
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL environment variable is not set.")
+    # Supabase (and most hosted PG) requires SSL; append if not already specified
+    url = DATABASE_URL
+    if "sslmode" not in url:
+        url += "?sslmode=require"
+    conn = psycopg2.connect(url, cursor_factory=psycopg2.extras.RealDictCursor)
     return conn
 
 def init_db():
