@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}Statistics - BBM Tracker{% endblock %}
+
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-bar-chart-fill me-2"></i>Statistics</h4>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-4">
+        <div class="card stat-card stat-card-blue p-3">
+            <div class="text-muted small mb-1">Total Entries</div>
+            <div class="fs-3 fw-bold text-primary">{{ total_entries }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+        <div class="card stat-card stat-card-orange p-3">
+            <div class="text-muted small mb-1">Total Spent</div>
+            <div class="fs-3 fw-bold text-warning">Rp {{ "{:,.0f}".format(total_spent) }}</div>
+        </div>
+    </div>
+    {% set ns = namespace(total_dist=0) %}
+    {% for r in records %}
+        {% if r.distance and r.distance > 0 %}
+            {% set ns.total_dist = ns.total_dist + r.distance %}
+        {% endif %}
+    {% endfor %}
+    <div class="col-sm-6 col-lg-4">
+        <div class="card stat-card stat-card-green p-3">
+            <div class="text-muted small mb-1">Total Distance Tracked</div>
+            <div class="fs-3 fw-bold text-success">{{ "{:,.1f}".format(ns.total_dist) }} km</div>
+        </div>
+    </div>
+</div>
+
+<!-- By Fuel Type Table -->
+<div class="card mb-5">
+    <div class="card-header bg-dark text-white fw-semibold">
+        <i class="bi bi-pie-chart me-2"></i>Breakdown by Fuel Type
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fuel Type</th>
+                    <th>Entries</th>
+                    <th>Total Spent</th>
+                    <th>Avg per Entry</th>
+                    <th>Share</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in by_type %}
+                <tr>
+                    <td>
+                        {% if row.fuel_type == "Pertalite" %}
+                            <span class="badge fuel-badge-pertalite fs-6">{{ row.fuel_type }}</span>
+                        {% elif row.fuel_type == "Pertamax" %}
+                            <span class="badge fuel-badge-pertamax fs-6">{{ row.fuel_type }}</span>
+                        {% else %}
+                            <span class="badge fuel-badge-turbo fs-6">{{ row.fuel_type }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ row.count }}</td>
+                    <td>Rp {{ "{:,.0f}".format(row.total) }}</td>
+                    <td>Rp {{ "{:,.0f}".format(row.total / row.count) }}</td>
+                    <td>
+                        {% if total_spent > 0 %}
+                        {% set pct = (row.total / total_spent * 100)|round(1) %}
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height:8px">
+                                <div class="progress-bar
+                                    {% if row.fuel_type == 'Pertalite' %}bg-success
+                                    {% elif row.fuel_type == 'Pertamax' %}bg-primary
+                                    {% else %}bg-danger{% endif %}"
+                                    style="width:{{ pct }}%"></div>
+                            </div>
+                            <small>{{ pct }}%</small>
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ─── Mileage Section ─────────────────────────────────────────── -->
+<h5 class="mb-3"><i class="bi bi-speedometer2 me-2 text-primary"></i>Mileage Statistics</h5>
+
+<ul class="nav nav-tabs mb-0" id="mileageTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if not (range_from and range_to) %}active{% endif %}"
+                id="tab-date-btn" data-bs-toggle="tab"
+                data-bs-target="#tab-date" type="button" role="tab">
+            <i class="bi bi-calendar-day me-1"></i>By Date
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-month-btn" data-bs-toggle="tab"
+                data-bs-target="#tab-month" type="button" role="tab">
+            <i class="bi bi-calendar-month me-1"></i>By Month
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link {% if range_from and range_to %}active{% endif %}"
+                id="tab-range-btn" data-bs-toggle="tab"
+                data-bs-target="#tab-range" type="button" role="tab">
+            <i class="bi bi-calendar-range me-1"></i>Date Range
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content border border-top-0 rounded-bottom bg-white p-3 mb-4" id="mileageTabContent">
+
+    <!-- By Date -->
+    <div class="tab-pane fade {% if not (range_from and range_to) %}show active{% endif %}" id="tab-date" role="tabpanel">
+        {% if mileage_by_date %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Start (km)</th>
+                        <th>End (km)</th>
+                        <th>Distance</th>
+                        <th>Readings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in mileage_by_date %}
+                    <tr>
+                        <td class="fw-semibold">{{ row.day }}</td>
+                        <td>{{ "{:,.1f}".format(row.start_km) }}</td>
+                        <td>{{ "{:,.1f}".format(row.end_km) }}</td>
+                        <td>
+                            {% if row.distance and row.distance > 0 %}
+                                <span class="badge bg-success fs-6">+{{ "{:,.1f}".format(row.distance) }} km</span>
+                            {% else %}<span class="text-muted">—</span>{% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ row.entries }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted py-3 mb-0 text-center"><i class="bi bi-info-circle me-1"></i>No mileage data yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- By Month -->
+    <div class="tab-pane fade" id="tab-month" role="tabpanel">
+        {% if mileage_by_month %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Month</th>
+                        <th>Start (km)</th>
+                        <th>End (km)</th>
+                        <th>Distance</th>
+                        <th>Readings</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in mileage_by_month %}
+                    <tr>
+                        <td class="fw-semibold">{{ row.month }}</td>
+                        <td>{{ "{:,.1f}".format(row.start_km) }}</td>
+                        <td>{{ "{:,.1f}".format(row.end_km) }}</td>
+                        <td>
+                            {% if row.distance and row.distance > 0 %}
+                                <span class="badge bg-success fs-6">+{{ "{:,.1f}".format(row.distance) }} km</span>
+                            {% else %}<span class="text-muted">—</span>{% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ row.entries }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted py-3 mb-0 text-center"><i class="bi bi-info-circle me-1"></i>No mileage data yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Date Range -->
+    <div class="tab-pane fade {% if range_from and range_to %}show active{% endif %}" id="tab-range" role="tabpanel">
+        <form method="GET" action="{{ url_for('stats') }}" class="row g-2 align-items-end mb-3">
+            <div class="col-sm-4">
+                <label class="form-label fw-semibold mb-1">From</label>
+                <input type="date" class="form-control" name="range_from" value="{{ range_from }}">
+            </div>
+            <div class="col-sm-4">
+                <label class="form-label fw-semibold mb-1">To</label>
+                <input type="date" class="form-control" name="range_to" value="{{ range_to }}">
+            </div>
+            <div class="col-sm-auto">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>Calculate
+                </button>
+                {% if range_from and range_to %}
+                <a href="{{ url_for('stats') }}" class="btn btn-outline-secondary ms-1">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if range_from and range_to %}
+            {% if mileage_range and mileage_range.entries and mileage_range.entries > 0 %}
+            <div class="row g-3 mt-1">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card p-3 text-center border-primary">
+                        <div class="text-muted small">Readings</div>
+                        <div class="fs-4 fw-bold text-primary">{{ mileage_range.entries }}</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted small">Start Odometer</div>
+                        <div class="fs-4 fw-bold">{{ "{:,.1f}".format(mileage_range.start_km) }} km</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card p-3 text-center">
+                        <div class="text-muted small">End Odometer</div>
+                        <div class="fs-4 fw-bold">{{ "{:,.1f}".format(mileage_range.end_km) }} km</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card p-3 text-center border-success">
+                        <div class="text-muted small">Total Distance</div>
+                        <div class="fs-4 fw-bold text-success">
+                            {% if mileage_range.distance and mileage_range.distance > 0 %}
+                                {{ "{:,.1f}".format(mileage_range.distance) }} km
+                            {% else %}—{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted text-center py-3"><i class="bi bi-info-circle me-1"></i>No mileage data for the selected range.</p>
+            {% endif %}
+        {% else %}
+        <p class="text-muted text-center py-3"><i class="bi bi-arrow-up me-1"></i>Select a date range above to calculate mileage.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+{% if range_from and range_to %}
+document.addEventListener('DOMContentLoaded', function() {
+    bootstrap.Tab.getOrCreateInstance(document.getElementById('tab-range-btn')).show();
+});
+{% endif %}
+</script>
+{% endblock %}

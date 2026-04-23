@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Mileage - BBM Tracker{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!-- Add Form -->
+    <div class="col-md-4">
+        <div class="card p-4 sticky-top" style="top: 1rem;">
+            <h5 class="mb-3"><i class="bi bi-speedometer2 me-2 text-primary"></i>Record Mileage</h5>
+            <form method="POST" action="{{ url_for('mileage') }}">
+
+                <div class="mb-3">
+                    <label for="odometer_km" class="form-label fw-semibold">
+                        Odometer Reading <span class="text-muted fw-normal">(km)</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="form-control form-control-lg" id="odometer_km"
+                               name="odometer_km" placeholder="e.g. 12500.5"
+                               min="0" step="0.1" required autofocus>
+                        <span class="input-group-text">km</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="notes" class="form-label fw-semibold">
+                        Notes <span class="text-muted fw-normal">(optional)</span>
+                    </label>
+                    <input type="text" class="form-control" id="notes" name="notes"
+                           placeholder="e.g. after service, long trip…">
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle me-1"></i>Save Reading
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Records Table -->
+    <div class="col-md-8">
+        <h5 class="mb-3"><i class="bi bi-clock-history me-2"></i>Mileage History</h5>
+
+        {% if records %}
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Date &amp; Time</th>
+                            <th>Odometer (km)</th>
+                            <th>Distance from prev.</th>
+                            <th>Notes</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in records %}
+                        {% set prev = records[loop.index] if loop.index < records|length else none %}
+                        <tr>
+                            <td class="text-muted small">{{ loop.index }}</td>
+                            <td class="small">{{ r.recorded_at }}</td>
+                            <td class="fw-semibold">{{ "{:,.1f}".format(r.odometer_km) }}</td>
+                            <td>
+                                {% if prev %}
+                                    {% set diff = r.odometer_km - prev.odometer_km %}
+                                    {% if diff > 0 %}
+                                        <span class="text-success fw-semibold">+{{ "{:,.1f}".format(diff) }} km</span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="small text-muted">{{ r.notes or "—" }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('delete_mileage', record_id=r.id) }}"
+                                      onsubmit="return confirm('Delete this entry?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <div class="card p-5 text-center text-muted">
+            <i class="bi bi-speedometer2 display-3"></i>
+            <p class="mt-3 fs-5">No mileage records yet. Add your first reading!</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

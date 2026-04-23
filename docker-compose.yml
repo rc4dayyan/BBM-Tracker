@@ -1,0 +1,14 @@
+services:
+  bbm-tracker:
+    build: .
+    container_name: bbm-tracker
+    ports:
+      - "5000:5000"
+    volumes:
+      - bbm_data:/data
+    restart: unless-stopped
+    environment:
+      - DATABASE_PATH=/data/bbm_tracker.db
+
+volumes:
+  bbm_data:
