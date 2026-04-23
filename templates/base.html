@@ -312,9 +312,9 @@
         BBM Tracker
     </a>
     <nav class="desktop-nav">
-        <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}"><i class="bi bi-clock-history me-1"></i>History</a>
-        <a href="{{ url_for('mileage') }}" class="{% if request.endpoint == 'mileage' %}active{% endif %}"><i class="bi bi-speedometer2 me-1"></i>Mileage</a>
-        <a href="{{ url_for('stats') }}" class="{% if request.endpoint == 'stats' %}active{% endif %}"><i class="bi bi-bar-chart-fill me-1"></i>Stats</a>
+        <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}"><i class="bi bi-clock-history me-1"></i> History</a>
+        <a href="{{ url_for('mileage') }}" class="{% if request.endpoint == 'mileage' %}active{% endif %}"><i class="bi bi-speedometer2 me-1"></i> Mileage</a>
+        <a href="{{ url_for('stats') }}" class="{% if request.endpoint == 'stats' %}active{% endif %}"><i class="bi bi-bar-chart-fill me-1"></i> Stats</a>
         <a href="{{ url_for('add') }}" class="btn-add"><i class="bi bi-plus me-1"></i>Add Entry</a>
     </nav>
     <a href="{{ url_for('add') }}" class="topbar-add"><i class="bi bi-plus"></i></a>

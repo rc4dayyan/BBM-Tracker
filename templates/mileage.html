@@ -11,8 +11,8 @@
 <div class="card-s" style="margin-bottom:20px;">
     <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">New Reading</div>
     <form method="POST" action="{{ url_for('mileage') }}">
-        <div style="display:flex;gap:10px;align-items:flex-end;">
-            <div style="flex:1;">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
                 <label class="flabel" for="odometer_km">Odometer</label>
                 <div class="input-wrap">
                     <input type="number" class="finput" id="odometer_km" name="odometer_km"
@@ -21,12 +21,12 @@
                     <span class="input-unit">km</span>
                 </div>
             </div>
-            <div style="flex:1;">
-                <label class="flabel" for="notes">Notes</label>
-                <input type="text" class="finput" id="notes" name="notes" placeholder="optional">
+            <div>
+                <label class="flabel" for="notes">Notes <span style="text-transform:none;font-weight:400;color:var(--muted);">(optional)</span></label>
+                <input type="text" class="finput" id="notes" name="notes" placeholder="e.g. after service…">
             </div>
-            <button type="submit" class="btn-submit" style="width:auto;padding:13px 20px;flex-shrink:0;">
-                <i class="bi bi-check-lg"></i>
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-check-circle me-2"></i> Save Reading
             </button>
         </div>
     </form>

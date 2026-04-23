@@ -13,19 +13,19 @@
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
     <div class="stat-card sc-blue">
-        <div class="slabel"><i class="bi bi-list-check me-1"></i>Total Entries</div>
+        <div class="slabel"><i class="bi bi-list-check me-1"></i> Total Entries</div>
         <div class="sval">{{ total_entries }}</div>
         <div class="ssub">fill-ups recorded</div>
     </div>
     <div class="stat-card sc-orange">
-        <div class="slabel"><i class="bi bi-cash me-1"></i>Total Spent</div>
+        <div class="slabel"><i class="bi bi-cash me-1"></i> Total Spent</div>
         <div class="sval" style="font-size:1.15rem;">Rp {{ "{:,.0f}".format(total_spent) }}</div>
         <div class="ssub">across all fuel types</div>
     </div>
 </div>
 <div style="margin-bottom:24px;">
     <div class="stat-card sc-green">
-        <div class="slabel"><i class="bi bi-signpost-2 me-1"></i>Total Distance Tracked</div>
+        <div class="slabel"><i class="bi bi-signpost-2 me-1"></i> Total Distance Tracked</div>
         <div class="sval">{{ "{:,.1f}".format(ns.total_dist) }} <span style="font-size:1rem;opacity:.7;">km</span></div>
         <div class="ssub">based on odometer differences</div>
     </div>
@@ -68,9 +68,9 @@
 <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Mileage Statistics</div>
 
 <div class="tabs-bar" id="tabs-bar">
-    <button class="tab-btn {% if not (range_from and range_to) %}active{% endif %}" onclick="switchTab('tab-date')"><i class="bi bi-calendar-day me-1"></i>By Date</button>
-    <button class="tab-btn" onclick="switchTab('tab-month')"><i class="bi bi-calendar-month me-1"></i>Month</button>
-    <button class="tab-btn {% if range_from and range_to %}active{% endif %}" onclick="switchTab('tab-range')"><i class="bi bi-calendar-range me-1"></i>Range</button>
+    <button class="tab-btn {% if not (range_from and range_to) %}active{% endif %}" onclick="switchTab('tab-date')"><i class="bi bi-calendar-day me-1"></i> By Date</button>
+    <button class="tab-btn" onclick="switchTab('tab-month')"><i class="bi bi-calendar-month me-1"></i> Month</button>
+    <button class="tab-btn {% if range_from and range_to %}active{% endif %}" onclick="switchTab('tab-range')"><i class="bi bi-calendar-range me-1"></i> Range</button>
 </div>
 
 <!-- By Date -->
@@ -117,7 +117,7 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="empty"><i class="bi bi-calendar-x"></i><p>No mileage data yet.</p></div>
+    <div class="empty"><i class="bi bi-calendar-x"></i> <p>No mileage data yet.</p></div>
     {% endif %}
 </div>
 
@@ -135,7 +135,7 @@
             </div>
         </div>
         <div style="display:flex;gap:8px;">
-            <button type="submit" class="btn-submit" style="flex:1;"><i class="bi bi-search me-1"></i>Calculate</button>
+            <button type="submit" class="btn-submit" style="flex:1;"><i class="bi bi-search me-1"></i> Calculate</button>
             {% if range_from and range_to %}
             <a href="{{ url_for('stats') }}" style="flex-shrink:0;"><button type="button" class="btn-cancel" style="width:auto;padding:13px 18px;">Clear</button></a>
             {% endif %}
@@ -159,10 +159,10 @@
             </div>
         </div>
         {% else %}
-        <div class="empty"><i class="bi bi-search"></i><p>No mileage data for this range.</p></div>
+        <div class="empty"><i class="bi bi-search"></i> <p>No mileage data for this range.</p></div>
         {% endif %}
     {% else %}
-    <div class="empty" style="padding:28px;"><i class="bi bi-calendar-range"></i><p>Select a date range above.</p></div>
+    <div class="empty" style="padding:28px;"><i class="bi bi-calendar-range"></i> <p>Select a date range above.</p></div>
     {% endif %}
 </div>
 
