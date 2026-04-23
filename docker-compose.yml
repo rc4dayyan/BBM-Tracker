@@ -5,21 +5,6 @@ services:
     ports:
       - "5000:5000"
     restart: unless-stopped
-    depends_on:
-      - db
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/petrol_tracker
-
-  db:
-    image: postgres:16-alpine
-    container_name: bbm-db
-    restart: unless-stopped
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=petrol_tracker
-    volumes:
-      - bbm_data:/var/lib/postgresql/data
-
-volumes:
-  bbm_data:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}

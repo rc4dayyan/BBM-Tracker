@@ -3,5 +3,7 @@ services:
     name: petrol-tracker
     runtime: docker
     envVars:
-      - key: DATABASE_URL
-        sync: false  # set manually in the Render dashboard with your Supabase connection string
+      - key: SUPABASE_URL
+        sync: false  # e.g. https://xxxx.supabase.co
+      - key: SUPABASE_KEY
+        sync: false  # anon/public key from Supabase API settings
