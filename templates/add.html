@@ -1,94 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Add Entry - BBM Tracker{% endblock %}
+{% block title %}Add Entry — BBM Tracker{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card p-4">
-            <h4 class="mb-4"><i class="bi bi-fuel-pump-fill me-2 text-success"></i>Add Fuel Entry</h4>
-            <form method="POST" action="{{ url_for('add') }}">
-
-                <!-- Fuel Type -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Fuel Type</label>
-                    <div class="d-flex gap-2 flex-wrap">
-                        {% for fuel in ["Pertalite", "Pertamax", "Pertamax Turbo"] %}
-                        <div class="flex-fill">
-                            <input type="radio" class="btn-check" name="fuel_type"
-                                   id="type_{{ loop.index }}" value="{{ fuel }}"
-                                   {% if last_fuel_type == fuel %}checked{% endif %} required>
-                            <label class="btn btn-outline-secondary w-100
-                                {% if fuel == 'Pertalite' %}fuel-opt-green
-                                {% elif fuel == 'Pertamax' %}fuel-opt-blue
-                                {% else %}fuel-opt-red{% endif %}"
-                                for="type_{{ loop.index }}">
-                                {% if fuel == "Pertalite" %}
-                                    <i class="bi bi-circle-fill text-success me-1"></i>
-                                {% elif fuel == "Pertamax" %}
-                                    <i class="bi bi-circle-fill text-primary me-1"></i>
-                                {% else %}
-                                    <i class="bi bi-circle-fill text-danger me-1"></i>
-                                {% endif %}
-                                {{ fuel }}
-                            </label>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Price -->
-                <div class="mb-3">
-                    <label for="price" class="form-label fw-semibold">
-                        Total Price <span class="text-muted fw-normal">(Rp)</span>
-                    </label>
-                    <div class="input-group">
-                        <span class="input-group-text">Rp</span>
-                        <input type="number" class="form-control" id="price" name="price"
-                               placeholder="e.g. 50000" min="0" step="500" required>
-                    </div>
-                    <div class="form-text">Total amount you paid for fuel.</div>
-                </div>
-
-                <!-- Current KM -->
-                <div class="mb-3">
-                    <label for="current_km" class="form-label fw-semibold">
-                        Odometer Reading <span class="text-muted fw-normal">(km)</span>
-                    </label>
-                    <div class="input-group">
-                        <input type="number" class="form-control" id="current_km" name="current_km"
-                               placeholder="e.g. 12500.5" min="0" step="0.1" required>
-                        <span class="input-group-text">km</span>
-                    </div>
-                    <div class="form-text">Current odometer reading from your vehicle.</div>
-                </div>
-
-                <!-- Notes (optional) -->
-                <div class="mb-4">
-                    <label for="notes" class="form-label fw-semibold">
-                        Notes <span class="text-muted fw-normal">(optional)</span>
-                    </label>
-                    <input type="text" class="form-control" id="notes" name="notes"
-                           placeholder="e.g. full tank, highway trip…">
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-success btn-lg">
-                        <i class="bi bi-check-circle me-1"></i>Save Entry
-                    </button>
-                    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
-                </div>
-            </form>
-        </div>
-    </div>
+<div style="margin-bottom:20px;">
+    <div style="font-size:1.25rem;font-weight:700;">Add Fuel Entry</div>
+    <div style="font-size:.8rem;color:var(--muted);margin-top:2px;">Record your refuel</div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<style>
-    .btn-check:checked + .btn-outline-secondary {
-        background-color: #212529;
-        color: #fff;
-        border-color: #212529;
-    }
-</style>
+<div class="card-s">
+    <form method="POST" action="{{ url_for('add') }}">
+
+        <div style="margin-bottom:20px;">
+            <label class="flabel">Fuel Type</label>
+            <div class="fuel-chips">
+                <input type="radio" class="fuel-chip-in cg" name="fuel_type" id="ft1" value="Pertalite" {% if last_fuel_type == 'Pertalite' %}checked{% endif %} required>
+                <label class="fuel-chip" for="ft1">
+                    <span class="chip-dot" style="background:var(--green);"></span>Pertalite
+                    <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 90</span>
+                </label>
+
+                <input type="radio" class="fuel-chip-in cb" name="fuel_type" id="ft2" value="Pertamax" {% if last_fuel_type == 'Pertamax' %}checked{% endif %}>
+                <label class="fuel-chip" for="ft2">
+                    <span class="chip-dot" style="background:var(--blue);"></span>Pertamax
+                    <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 92</span>
+                </label>
+
+                <input type="radio" class="fuel-chip-in cr" name="fuel_type" id="ft3" value="Pertamax Turbo" {% if last_fuel_type == 'Pertamax Turbo' %}checked{% endif %}>
+                <label class="fuel-chip" for="ft3">
+                    <span class="chip-dot" style="background:var(--red);"></span>Pertamax Turbo
+                    <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 98</span>
+                </label>
+            </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+            <label class="flabel" for="price">Total Price</label>
+            <div class="input-wrap">
+                <input type="number" class="finput" id="price" name="price" placeholder="e.g. 50000" min="0" step="500" required style="padding-left:44px;">
+                <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.82rem;font-weight:700;">Rp</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+            <label class="flabel" for="current_km">Odometer Reading</label>
+            <div class="input-wrap">
+                <input type="number" class="finput" id="current_km" name="current_km" placeholder="e.g. 12500.5" min="0" step="0.1" required style="padding-right:48px;">
+                <span class="input-unit">km</span>
+            </div>
+        </div>
+
+        <div style="margin-bottom:28px;">
+            <label class="flabel" for="notes">Notes <span style="text-transform:none;font-weight:400;color:var(--muted);">(optional)</span></label>
+            <input type="text" class="finput" id="notes" name="notes" placeholder="e.g. full tank, highway trip…">
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <button type="submit" class="btn-submit"><i class="bi bi-check-circle me-2"></i>Save Entry</button>
+            <a href="{{ url_for('index') }}" style="display:block;"><button type="button" class="btn-cancel">Cancel</button></a>
+        </div>
+    </form>
+</div>
 {% endblock %}
