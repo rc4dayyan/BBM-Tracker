@@ -1,9 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from database import init_db, get_db
-from datetime import datetime, date
+from datetime import datetime, date, timezone, timedelta
 
 app = Flask(__name__)
 app.secret_key = "bbm-tracker-secret-key"
+
+WIB = timezone(timedelta(hours=7))
+
+def now_wib():
+    return datetime.now(WIB).strftime("%Y-%m-%d %H:%M:%S")
 
 @app.before_request
 def setup():
@@ -40,7 +45,7 @@ def add():
             "current_km": float(current_km),
             "distance": distance,
             "notes": notes,
-            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "created_at": now_wib()
         }).execute()
         return redirect(url_for("index"))
 
@@ -62,7 +67,7 @@ def mileage():
         db.table("mileage").insert({
             "odometer_km": float(odometer_km),
             "notes": notes,
-            "recorded_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            "recorded_at": now_wib()
         }).execute()
         return redirect(url_for("mileage"))
 
