@@ -291,6 +291,51 @@
         .mb-16 { margin-bottom: 16px; }
         .mb-20 { margin-bottom: 20px; }
 
+        /* Vehicle selector */
+        .vehicle-selector { position: relative; }
+        .vs-btn {
+            display: flex; align-items: center; gap: 7px;
+            background: var(--surface2); border: 1.5px solid var(--border);
+            border-radius: 10px; padding: 7px 12px;
+            color: var(--text); font-size: .82rem; font-weight: 600;
+            cursor: pointer; transition: border-color .18s, background .18s;
+            max-width: 160px;
+        }
+        .vs-btn:hover { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.06); }
+        .vs-btn .vs-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .vs-dropdown {
+            display: none; position: absolute; top: calc(100% + 8px); right: 0;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; min-width: 200px; z-index: 9999;
+            box-shadow: 0 8px 32px rgba(0,0,0,.5); overflow: hidden;
+        }
+        .vs-dropdown.open { display: block; }
+        .vs-dropdown-header {
+            padding: 10px 16px 8px;
+            font-size: .68rem; font-weight: 700; color: var(--muted);
+            text-transform: uppercase; letter-spacing: .08em;
+            border-bottom: 1px solid var(--border);
+        }
+        .vs-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 16px; cursor: pointer;
+            transition: background .15s; font-size: .88rem;
+        }
+        .vs-item:hover { background: var(--surface2); }
+        .vs-item .vs-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+            background: var(--muted);
+        }
+        .vs-item.vs-active .vs-dot { background: var(--green); }
+        .vs-item.vs-active { color: var(--green); }
+        .vs-manage {
+            display: block; padding: 10px 16px; text-align: center;
+            font-size: .78rem; font-weight: 600; color: var(--muted);
+            border-top: 1px solid var(--border);
+            transition: color .15s, background .15s;
+        }
+        .vs-manage:hover { color: var(--text); background: var(--surface2); }
+
         @media(min-width:600px){
             body { padding-bottom: 0; }
             .bottom-nav { display: none; }
@@ -315,9 +360,38 @@
         <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}"><i class="bi bi-clock-history me-1"></i> History</a>
         <a href="{{ url_for('mileage') }}" class="{% if request.endpoint == 'mileage' %}active{% endif %}"><i class="bi bi-speedometer2 me-1"></i> Mileage</a>
         <a href="{{ url_for('stats') }}" class="{% if request.endpoint == 'stats' %}active{% endif %}"><i class="bi bi-bar-chart-fill me-1"></i> Stats</a>
+        <a href="{{ url_for('vehicles') }}" class="{% if request.endpoint == 'vehicles' %}active{% endif %}"><i class="bi bi-car-front-fill me-1"></i> Vehicles</a>
         <a href="{{ url_for('add') }}" class="btn-add"><i class="bi bi-plus me-1"></i>Add Entry</a>
     </nav>
-    <a href="{{ url_for('add') }}" class="topbar-add"><i class="bi bi-plus"></i></a>
+    <!-- Vehicle selector (mobile + desktop) -->
+    <div style="display:flex;align-items:center;gap:8px;">
+        {% if vehicles %}
+        <div class="vehicle-selector" id="vsel">
+            <button class="vs-btn" type="button" onclick="document.getElementById('vsdrop').classList.toggle('open');event.stopPropagation();">
+                <i class="bi bi-car-front-fill" style="color:var(--green);flex-shrink:0;"></i>
+                <span class="vs-name">{{ active_vehicle.name if active_vehicle else 'Select' }}</span>
+                <i class="bi bi-chevron-down" style="font-size:.7rem;color:var(--muted);flex-shrink:0;"></i>
+            </button>
+            <div class="vs-dropdown" id="vsdrop">
+                <div class="vs-dropdown-header">Switch Vehicle</div>
+                {% for v in vehicles %}
+                <form method="POST" action="{{ url_for('select_vehicle', vehicle_id=v.id) }}" style="margin:0;">
+                    <button type="submit" class="vs-item {% if active_vehicle and active_vehicle.id == v.id %}vs-active{% endif %}" style="width:100%;border:none;background:transparent;text-align:left;color:inherit;cursor:pointer;">
+                        <span class="vs-dot"></span>
+                        <span style="flex:1;">{{ v.name }}</span>
+                        {% if v.plate %}<span style="font-size:.72rem;color:var(--muted);">{{ v.plate }}</span>{% endif %}
+                        {% if active_vehicle and active_vehicle.id == v.id %}<i class="bi bi-check2" style="flex-shrink:0;"></i>{% endif %}
+                    </button>
+                </form>
+                {% endfor %}
+                <a href="{{ url_for('vehicles') }}" class="vs-manage"><i class="bi bi-gear me-1"></i>Manage Vehicles</a>
+            </div>
+        </div>
+        {% else %}
+        <a href="{{ url_for('vehicles') }}" style="background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:7px 12px;font-size:.8rem;font-weight:700;white-space:nowrap;"><i class="bi bi-plus me-1"></i>Add Vehicle</a>
+        {% endif %}
+        <a href="{{ url_for('add') }}" class="topbar-add"><i class="bi bi-plus"></i></a>
+    </div>
 </header>
 
 <main class="main">
@@ -341,6 +415,9 @@
     <a href="{{ url_for('stats') }}" class="{% if request.endpoint == 'stats' %}active{% endif %}">
         <i class="bi bi-bar-chart-fill"></i>Stats
     </a>
+    <a href="{{ url_for('vehicles') }}" class="{% if request.endpoint == 'vehicles' %}active{% endif %}">
+        <i class="bi bi-car-front-fill"></i>Vehicles
+    </a>
 </nav>
 
 <script>
@@ -350,6 +427,8 @@
     document.addEventListener('touchstart',e=>{if(window.scrollY===0){sy=e.touches[0].clientY;p=true;}},{passive:true});
     document.addEventListener('touchmove',e=>{if(!p)return;const d=e.touches[0].clientY-sy;if(d>0){ind.classList.add('visible');txt.textContent=d>=T?'Release to refresh':'Pull down to refresh';}},{passive:true});
     document.addEventListener('touchend',e=>{if(!p)return;p=false;const d=e.changedTouches[0].clientY-sy;if(d>=T){ind.classList.add('refreshing');txt.textContent='Refreshing…';setTimeout(()=>location.reload(),300);}else{ind.classList.remove('visible');}});
+    // Close vehicle dropdown on outside click
+    document.addEventListener('click',function(){const d=document.getElementById('vsdrop');if(d)d.classList.remove('open');});
 })();
 </script>
 {% block scripts %}{% endblock %}
