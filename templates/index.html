@@ -5,7 +5,10 @@
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
         <div style="font-size:1.25rem;font-weight:700;">Fuel History</div>
-        <div style="font-size:.8rem;color:var(--muted);margin-top:2px;">{{ records|length }} record{% if records|length != 1 %}s{% endif %}</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-top:2px;">
+            {% if active_vehicle %}<i class="bi bi-car-front-fill" style="margin-right:4px;"></i>{{ active_vehicle.name }} &nbsp;·&nbsp; {% endif %}
+            {{ records|length }} record{% if records|length != 1 %}s{% endif %}
+        </div>
     </div>
     <a href="{{ url_for('add') }}" style="background:linear-gradient(135deg,var(--green),#16a34a);color:#fff;border:none;border-radius:12px;padding:10px 18px;font-weight:700;font-size:.88rem;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(34,197,94,.28);">
         <i class="bi bi-plus" style="font-size:1rem;"></i>Add
@@ -16,14 +19,18 @@
 <div class="card-s">
     {% for r in records %}
     <div class="record-row">
-        <div class="rec-icon {% if r.fuel_type == 'Pertalite' %}ri-green{% elif r.fuel_type == 'Pertamax' %}ri-blue{% else %}ri-red{% endif %}">
-            <i class="bi bi-fuel-pump-fill"></i>
+        <div class="rec-icon {% if r.fuel_type == 'Pertalite' %}ri-green{% elif r.fuel_type == 'Pertamax' %}ri-blue{% elif r.fuel_type == 'Home Charge' %}ri-green{% elif r.fuel_type == 'SPKLU' %}ri-blue{% else %}ri-red{% endif %}">
+            <i class="bi bi-{% if r.fuel_type in ['Home Charge','SPKLU'] %}lightning-charge-fill{% else %}fuel-pump-fill{% endif %}"></i>
         </div>
         <div class="rec-body">
             <div class="rec-title" style="display:flex;align-items:center;gap:8px;">
                 {% if r.fuel_type == 'Pertalite' %}
                     <span class="fb-green">{{ r.fuel_type }}</span>
                 {% elif r.fuel_type == 'Pertamax' %}
+                    <span class="fb-blue">{{ r.fuel_type }}</span>
+                {% elif r.fuel_type == 'Home Charge' %}
+                    <span class="fb-green">{{ r.fuel_type }}</span>
+                {% elif r.fuel_type == 'SPKLU' %}
                     <span class="fb-blue">{{ r.fuel_type }}</span>
                 {% else %}
                     <span class="fb-red">{{ r.fuel_type }}</span>

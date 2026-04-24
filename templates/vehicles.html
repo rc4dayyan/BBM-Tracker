@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Vehicles — BBM Tracker{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:20px;">
+    <div style="font-size:1.25rem;font-weight:700;">Vehicles</div>
+    <div style="font-size:.8rem;color:var(--muted);margin-top:2px;">Manage your vehicles</div>
+</div>
+
+<!-- Add vehicle form -->
+<div class="card-s" style="margin-bottom:20px;">
+    <div style="font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">Add Vehicle</div>
+    <form method="POST" action="{{ url_for('add_vehicle') }}">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+                <label class="flabel" for="vname">Name <span style="color:var(--red);">*</span></label>
+                <input type="text" class="finput" id="vname" name="name" placeholder="e.g. Honda Vario, Toyota Avanza…" required autofocus>
+            </div>
+            <div>
+                <label class="flabel">Type <span style="color:var(--red);">*</span></label>
+                <div class="fuel-chips">
+                    <input type="radio" class="fuel-chip-in co" name="type" id="vt1" value="ICE" checked required>
+                    <label class="fuel-chip" for="vt1">
+                        <span class="chip-dot" style="background:var(--orange);"></span>ICE
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Internal Combustion Engine</span>
+                    </label>
+                    <input type="radio" class="fuel-chip-in cb" name="type" id="vt2" value="EV">
+                    <label class="fuel-chip" for="vt2">
+                        <span class="chip-dot" style="background:var(--blue);"></span>EV
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Electric Vehicle</span>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label class="flabel" for="vnotes">Notes <span style="text-transform:none;font-weight:400;color:var(--muted);">(optional)</span></label>
+                <input type="text" class="finput" id="vnotes" name="notes" placeholder="e.g. family car, daily commute…">
+            </div>
+            <button type="submit" class="btn-submit"><i class="bi bi-plus-circle me-2"></i>Add Vehicle</button>
+        </div>
+    </form>
+</div>
+
+<!-- Vehicle list -->
+{% if all_vehicles %}
+<div class="card-s">
+    {% for v in all_vehicles %}
+    <div class="record-row">
+        <div class="rec-icon {% if active_vehicle and active_vehicle.id == v.id %}ri-green{% elif v.type == 'EV' %}ri-blue{% else %}ri-orange{% endif %}">
+            <i class="bi bi-{% if v.type == 'EV' %}lightning-charge-fill{% else %}fuel-pump-fill{% endif %}"></i>
+        </div>
+        <div class="rec-body">
+            <div class="rec-title" style="display:flex;align-items:center;gap:8px;">
+                {{ v.name }}
+                <span style="background:{% if v.type == 'EV' %}rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.25){% else %}rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.25){% endif %};border-radius:8px;padding:2px 8px;font-size:.68rem;font-weight:700;">{{ v.type }}</span>
+                {% if active_vehicle and active_vehicle.id == v.id %}
+                    <span style="background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:2px 8px;font-size:.68rem;font-weight:700;">Active</span>
+                {% endif %}
+            </div>
+            <div class="rec-sub">
+                <i class="bi bi-clock"></i> {{ v.created_at[:10] }}
+            </div>
+            {% if v.notes %}
+            <div style="font-size:.72rem;color:var(--muted);margin-top:3px;"><i class="bi bi-chat-left-text"></i> {{ v.notes }}</div>
+            {% endif %}
+        </div>
+        <div class="rec-right" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+            {% if not (active_vehicle and active_vehicle.id == v.id) %}
+            <form method="POST" action="{{ url_for('select_vehicle', vehicle_id=v.id) }}">
+                <button type="submit" style="background:rgba(59,130,246,.12);color:var(--blue);border:1px solid rgba(59,130,246,.25);border-radius:9px;padding:7px 11px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+                    <i class="bi bi-check2-circle"></i> Select
+                </button>
+            </form>
+            {% endif %}
+            <form method="POST" action="{{ url_for('delete_vehicle', vehicle_id=v.id) }}" onsubmit="return confirm('Delete {{ v.name }} and ALL its data?')">
+                <button type="submit" class="btn-del"><i class="bi bi-trash"></i></button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty">
+    <i class="bi bi-car-front"></i>
+    <p>No vehicles yet.<br>Add your first vehicle above.</p>
+</div>
+{% endif %}
+{% endblock %}
