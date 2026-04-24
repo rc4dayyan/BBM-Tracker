@@ -51,13 +51,13 @@ def vehicles():
 @app.route("/vehicles/add", methods=["POST"])
 def add_vehicle():
     name = request.form.get("name", "").strip()
-    plate = request.form.get("plate", "").strip()
+    vehicle_type = request.form.get("type", "ICE").strip()
     notes = request.form.get("notes", "").strip()
     if name:
         db = get_db()
         result = db.table("vehicles").insert({
             "name": name,
-            "plate": plate or None,
+            "type": vehicle_type,
             "notes": notes or None,
             "created_at": now_wib()
         }).execute()
@@ -124,7 +124,9 @@ def add():
         return redirect(url_for("index"))
 
     last_fuel_type = session.get("last_fuel_type", "Pertalite")
-    return render_template("add.html", last_fuel_type=last_fuel_type)
+    db = get_db()
+    vehicle = db.table("vehicles").select("*").eq("id", vid).single().execute().data
+    return render_template("add.html", last_fuel_type=last_fuel_type, vehicle=vehicle)
 
 @app.route("/delete/<int:record_id>", methods=["POST"])
 def delete(record_id):

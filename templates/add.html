@@ -3,33 +3,50 @@
 
 {% block content %}
 <div style="margin-bottom:20px;">
-    <div style="font-size:1.25rem;font-weight:700;">Add Fuel Entry</div>
-    <div style="font-size:.8rem;color:var(--muted);margin-top:2px;">Record your refuel</div>
+    <div style="font-size:1.25rem;font-weight:700;">Add {% if vehicle and vehicle.type == 'EV' %}Charge{% else %}Fuel{% endif %} Entry</div>
+    <div style="font-size:.8rem;color:var(--muted);margin-top:2px;">
+        {% if vehicle %}
+        <i class="bi bi-{% if vehicle.type == 'EV' %}lightning-charge-fill{% else %}fuel-pump-fill{% endif %}" style="margin-right:4px;"></i>{{ vehicle.name }}
+        {% else %}
+        Record your refuel
+        {% endif %}
+    </div>
 </div>
 
 <div class="card-s">
     <form method="POST" action="{{ url_for('add') }}">
 
         <div style="margin-bottom:20px;">
-            <label class="flabel">Fuel Type</label>
+            <label class="flabel">{% if vehicle and vehicle.type == 'EV' %}Charge Type{% else %}Fuel Type{% endif %}</label>
             <div class="fuel-chips">
-                <input type="radio" class="fuel-chip-in cg" name="fuel_type" id="ft1" value="Pertalite" {% if last_fuel_type == 'Pertalite' %}checked{% endif %} required>
-                <label class="fuel-chip" for="ft1">
-                    <span class="chip-dot" style="background:var(--green);"></span>Pertalite
-                    <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 90</span>
-                </label>
-
-                <input type="radio" class="fuel-chip-in cb" name="fuel_type" id="ft2" value="Pertamax" {% if last_fuel_type == 'Pertamax' %}checked{% endif %}>
-                <label class="fuel-chip" for="ft2">
-                    <span class="chip-dot" style="background:var(--blue);"></span>Pertamax
-                    <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 92</span>
-                </label>
-
-                <input type="radio" class="fuel-chip-in cr" name="fuel_type" id="ft3" value="Pertamax Turbo" {% if last_fuel_type == 'Pertamax Turbo' %}checked{% endif %}>
-                <label class="fuel-chip" for="ft3">
-                    <span class="chip-dot" style="background:var(--red);"></span>Pertamax Turbo
-                    <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 98</span>
-                </label>
+                {% if vehicle and vehicle.type == 'EV' %}
+                    <input type="radio" class="fuel-chip-in cg" name="fuel_type" id="ft1" value="Home Charge" {% if last_fuel_type == 'Home Charge' or last_fuel_type not in ['Home Charge','SPKLU'] %}checked{% endif %} required>
+                    <label class="fuel-chip" for="ft1">
+                        <span class="chip-dot" style="background:var(--green);"></span>Home Charge
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">AC Charging</span>
+                    </label>
+                    <input type="radio" class="fuel-chip-in cb" name="fuel_type" id="ft2" value="SPKLU" {% if last_fuel_type == 'SPKLU' %}checked{% endif %}>
+                    <label class="fuel-chip" for="ft2">
+                        <span class="chip-dot" style="background:var(--blue);"></span>SPKLU
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Public Fast Charging</span>
+                    </label>
+                {% else %}
+                    <input type="radio" class="fuel-chip-in cg" name="fuel_type" id="ft1" value="Pertalite" {% if last_fuel_type == 'Pertalite' %}checked{% endif %} required>
+                    <label class="fuel-chip" for="ft1">
+                        <span class="chip-dot" style="background:var(--green);"></span>Pertalite
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 90</span>
+                    </label>
+                    <input type="radio" class="fuel-chip-in cb" name="fuel_type" id="ft2" value="Pertamax" {% if last_fuel_type == 'Pertamax' %}checked{% endif %}>
+                    <label class="fuel-chip" for="ft2">
+                        <span class="chip-dot" style="background:var(--blue);"></span>Pertamax
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 92</span>
+                    </label>
+                    <input type="radio" class="fuel-chip-in cr" name="fuel_type" id="ft3" value="Pertamax Turbo" {% if last_fuel_type == 'Pertamax Turbo' %}checked{% endif %}>
+                    <label class="fuel-chip" for="ft3">
+                        <span class="chip-dot" style="background:var(--red);"></span>Pertamax Turbo
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Ron 98</span>
+                    </label>
+                {% endif %}
             </div>
         </div>
 

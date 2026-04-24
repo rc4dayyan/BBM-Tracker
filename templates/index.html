@@ -19,14 +19,18 @@
 <div class="card-s">
     {% for r in records %}
     <div class="record-row">
-        <div class="rec-icon {% if r.fuel_type == 'Pertalite' %}ri-green{% elif r.fuel_type == 'Pertamax' %}ri-blue{% else %}ri-red{% endif %}">
-            <i class="bi bi-fuel-pump-fill"></i>
+        <div class="rec-icon {% if r.fuel_type == 'Pertalite' %}ri-green{% elif r.fuel_type == 'Pertamax' %}ri-blue{% elif r.fuel_type == 'Home Charge' %}ri-green{% elif r.fuel_type == 'SPKLU' %}ri-blue{% else %}ri-red{% endif %}">
+            <i class="bi bi-{% if r.fuel_type in ['Home Charge','SPKLU'] %}lightning-charge-fill{% else %}fuel-pump-fill{% endif %}"></i>
         </div>
         <div class="rec-body">
             <div class="rec-title" style="display:flex;align-items:center;gap:8px;">
                 {% if r.fuel_type == 'Pertalite' %}
                     <span class="fb-green">{{ r.fuel_type }}</span>
                 {% elif r.fuel_type == 'Pertamax' %}
+                    <span class="fb-blue">{{ r.fuel_type }}</span>
+                {% elif r.fuel_type == 'Home Charge' %}
+                    <span class="fb-green">{{ r.fuel_type }}</span>
+                {% elif r.fuel_type == 'SPKLU' %}
                     <span class="fb-blue">{{ r.fuel_type }}</span>
                 {% else %}
                     <span class="fb-red">{{ r.fuel_type }}</span>

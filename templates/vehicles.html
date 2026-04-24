@@ -17,8 +17,19 @@
                 <input type="text" class="finput" id="vname" name="name" placeholder="e.g. Honda Vario, Toyota Avanza…" required autofocus>
             </div>
             <div>
-                <label class="flabel" for="vplate">License Plate <span style="text-transform:none;font-weight:400;color:var(--muted);">(optional)</span></label>
-                <input type="text" class="finput" id="vplate" name="plate" placeholder="e.g. B 1234 ABC">
+                <label class="flabel">Type <span style="color:var(--red);">*</span></label>
+                <div class="fuel-chips">
+                    <input type="radio" class="fuel-chip-in co" name="type" id="vt1" value="ICE" checked required>
+                    <label class="fuel-chip" for="vt1">
+                        <span class="chip-dot" style="background:var(--orange);"></span>ICE
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Internal Combustion Engine</span>
+                    </label>
+                    <input type="radio" class="fuel-chip-in cb" name="type" id="vt2" value="EV">
+                    <label class="fuel-chip" for="vt2">
+                        <span class="chip-dot" style="background:var(--blue);"></span>EV
+                        <span style="margin-left:auto;font-size:.75rem;color:inherit;opacity:.7;">Electric Vehicle</span>
+                    </label>
+                </div>
             </div>
             <div>
                 <label class="flabel" for="vnotes">Notes <span style="text-transform:none;font-weight:400;color:var(--muted);">(optional)</span></label>
@@ -34,18 +45,18 @@
 <div class="card-s">
     {% for v in all_vehicles %}
     <div class="record-row">
-        <div class="rec-icon {% if active_vehicle and active_vehicle.id == v.id %}ri-green{% else %}ri-purple{% endif %}">
-            <i class="bi bi-car-front-fill"></i>
+        <div class="rec-icon {% if active_vehicle and active_vehicle.id == v.id %}ri-green{% elif v.type == 'EV' %}ri-blue{% else %}ri-orange{% endif %}">
+            <i class="bi bi-{% if v.type == 'EV' %}lightning-charge-fill{% else %}fuel-pump-fill{% endif %}"></i>
         </div>
         <div class="rec-body">
             <div class="rec-title" style="display:flex;align-items:center;gap:8px;">
                 {{ v.name }}
+                <span style="background:{% if v.type == 'EV' %}rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.25){% else %}rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.25){% endif %};border-radius:8px;padding:2px 8px;font-size:.68rem;font-weight:700;">{{ v.type }}</span>
                 {% if active_vehicle and active_vehicle.id == v.id %}
                     <span style="background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:2px 8px;font-size:.68rem;font-weight:700;">Active</span>
                 {% endif %}
             </div>
             <div class="rec-sub">
-                {% if v.plate %}<i class="bi bi-tag"></i> {{ v.plate }}&nbsp;·&nbsp;{% endif %}
                 <i class="bi bi-clock"></i> {{ v.created_at[:10] }}
             </div>
             {% if v.notes %}

@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS vehicles (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    plate TEXT,
+    type TEXT NOT NULL DEFAULT 'ICE',
     notes TEXT,
     created_at TEXT NOT NULL
 );
