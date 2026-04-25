@@ -121,9 +121,17 @@ def add():
             "notes": notes,
             "created_at": now_wib()
         }).execute()
+
+        db.table("mileage").insert({
+            "vehicle_id": vid,
+            "odometer_km": float(current_km),
+            "notes": notes,
+            "recorded_at": now_wib()
+        }).execute()
+
         return redirect(url_for("index"))
 
-    last_fuel_type = session.get("last_fuel_type", "Pertalite")
+    last_fuel_type = session.get("last_fuel_type", fuel_type)
     db = get_db()
     vehicle = db.table("vehicles").select("*").eq("id", vid).single().execute().data
     return render_template("add.html", last_fuel_type=last_fuel_type, vehicle=vehicle)
