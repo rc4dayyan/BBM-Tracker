@@ -87,9 +87,68 @@ def index():
     db = get_db()
     if vid:
         records = db.table("consumption").select("*").eq("vehicle_id", vid).order("created_at", desc=True).execute().data
+        all_mileage = db.table("mileage").select("*").eq("vehicle_id", vid).order("recorded_at").execute().data
     else:
         records = []
-    return render_template("index.html", records=records)
+        all_mileage = []
+
+    # ── Today's mileage ──────────────────────────────────────────────────────
+    today_str = datetime.now(WIB).strftime("%Y-%m-%d")
+    today_readings = [float(r["odometer_km"]) for r in all_mileage if r["recorded_at"][:10] == today_str]
+    today_mileage = (max(today_readings) - min(today_readings)) if len(today_readings) >= 2 else None
+
+    # ── Average daily mileage ────────────────────────────────────────────────
+    date_map = {}
+    for r in all_mileage:
+        day = r["recorded_at"][:10]
+        date_map.setdefault(day, []).append(float(r["odometer_km"]))
+    daily_distances = [max(v) - min(v) for v in date_map.values() if max(v) - min(v) > 0]
+    avg_daily_km = (sum(daily_distances) / len(daily_distances)) if daily_distances else None
+
+    # ── Last consumption insights ─────────────────────────────────────────────
+    # last_cons: most recent fill-up, prev_cons: the one before it
+    last_cons = records[0] if records else None
+    prev_cons = records[1] if len(records) >= 2 else None
+
+    # km driven since last fill-up (compare latest odometer to last fill-up km)
+    latest_km = float(all_mileage[-1]["odometer_km"]) if all_mileage else None
+    km_since_last = None
+    last_fill_km = float(last_cons["current_km"]) if last_cons else None
+    if latest_km is not None and last_fill_km is not None:
+        km_since_last = latest_km - last_fill_km
+
+    # Distance covered during last fill-up cycle (distance stored on last record)
+    last_cycle_km = float(last_cons["distance"]) if last_cons and last_cons.get("distance") else None
+
+    # Cost per km from the last fill-up cycle
+    cost_per_km = None
+    if last_cons and last_cycle_km and last_cycle_km > 0:
+        cost_per_km = float(last_cons["price"]) / last_cycle_km
+
+    # Estimated remaining km & days at previous price before next fill-up
+    est_remaining_km = None
+    est_remaining_days = None
+    progress_pct = None
+    if km_since_last is not None and last_cycle_km and last_cycle_km > 0:
+        est_remaining_km = max(last_cycle_km - km_since_last, 0)
+        progress_pct = min(km_since_last / last_cycle_km * 100, 100)
+        if avg_daily_km and avg_daily_km > 0:
+            est_remaining_days = est_remaining_km / avg_daily_km
+
+    return render_template(
+        "index.html",
+        records=records,
+        today_mileage=today_mileage,
+        avg_daily_km=avg_daily_km,
+        last_cons=last_cons,
+        prev_cons=prev_cons,
+        km_since_last=km_since_last,
+        last_cycle_km=last_cycle_km,
+        cost_per_km=cost_per_km,
+        est_remaining_km=est_remaining_km,
+        est_remaining_days=est_remaining_days,
+        progress_pct=progress_pct,
+    )
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
@@ -223,6 +282,8 @@ def stats():
         for m, v in month_map.items()
     ], key=lambda x: x["month"], reverse=True)
 
+    total_dist_mileage = sum(r["distance"] for r in mileage_by_date if r["distance"] and r["distance"] > 0)
+
     range_from = request.args.get("range_from", "")
     range_to   = request.args.get("range_to", "")
     mileage_range = None
@@ -245,6 +306,7 @@ def stats():
         mileage_range=mileage_range,
         range_from=range_from,
         range_to=range_to,
+        total_dist_mileage=total_dist_mileage,
     )
 
 if __name__ == "__main__":
