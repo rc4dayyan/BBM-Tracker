@@ -97,7 +97,8 @@ def add():
     if not vid:
         flash("Please add a vehicle first.")
         return redirect(url_for("vehicles"))
-
+        
+    fuel_type = "Pertamax"
     if request.method == "POST":
         fuel_type = request.form.get("fuel_type")
         price = request.form.get("price")
